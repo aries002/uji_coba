@@ -1,0 +1,50 @@
+
+-- FUNGSI MEMBUAT NOMOR AUTO INCREMENT
+delimiter //
+
+CREATE FUNCTION `nomor`() RETURNS int
+    NO SQL
+    NOT DETERMINISTIC
+     begin
+      SET @var := @var + 1;
+      return @var;
+     end
+     //
+
+delimiter ;
+SET @var=-1;
+---------------------------------------------
+delimiter //
+
+CREATE FUNCTION `reset_nomor`() RETURNS int
+    NO SQL
+    NOT DETERMINISTIC
+     begin
+      SET @var =-1;
+      return @var;
+     end
+     //
+
+delimiter ;
+
+
+
+-- ROW_NUMBER MYSQL FIX
+SELECT ROW_NUMBER() OVER (ORDER BY name) id_num, name, type FROM domains ORDER BY name;
+--id_num = nama kolom hasil
+--order by name = mengurutkan nomor
+----------------------------------------------------------------------------------
+SELECT ISNULL(CAST(ROW_NUMBER() OVER (ORDER BY name) AS int), 0) AS id_num, * FROM domains;
+
+
+-- FIX
+CREATE VIEW domains (id, name, master, last_check, type, notified_serial, account)
+AS
+SELECT ROW_NUMBER() OVER (ORDER BY name) id, name, master, last_check, type, notified_serial, account
+FROM (
+      SELECT name, master, last_check, type, notified_serial, account
+      FROM `pdns`.`domains` 
+      UNION ALL
+      SELECT name, master, last_check, type, notified_serial, account
+      FROM `pdns_master`.`domains` 
+)sq;
